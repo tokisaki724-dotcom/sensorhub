@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Sensor;
+use App\Models\Project;
+use App\Models\Product;
+use App\Models\Video;
+use App\Models\User;
+use App\Models\Suggestion;
+
+class DashboardController extends Controller
+{
+    /**
+     * Display the admin dashboard
+     */
+    public function index()
+    {
+        $stats = [
+            'sensors' => Sensor::count(),
+            'projects' => Project::count(),
+            'products' => Product::count(),
+            'videos' => Video::count(),
+            'users' => User::where('role', 'user')->count(),
+            'suggestions' => Suggestion::count(),
+            'pending_suggestions' => Suggestion::where('status', 'pending')->count(),
+        ];
+
+        $recentUsers = User::where('role', 'user')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $recentSuggestions = Suggestion::with('user')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recentUsers', 'recentSuggestions'));
+    }
+}

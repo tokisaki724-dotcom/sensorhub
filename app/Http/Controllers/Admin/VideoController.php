@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Video;
+use App\Models\Sensor;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class VideoController extends Controller
+{
+    public function index()
+    {
+        $videos = Video::with('sensor')->latest()->paginate(10);
+        return view('admin.videos.index', compact('videos'));
+    }
+
+    public function create()
+    {
+        $sensors = Sensor::where('is_active', true)->get();
+        return view('admin.videos.create', compact('sensors'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'youtube_link' => 'required|url',
+            'category' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'sensor_id' => 'nullable|exists:sensors,id',
+        ]);
+
+        // Extract YouTube video ID
+        $youtubeId = $this->extractYouTubeId($validated['youtube_link']);
+        $validated['youtube_id'] = $youtubeId;
+        $validated['slug'] = Str::slug($validated['title']);
+        $validated['is_active'] = $request->has('is_active');
+
+        Video::create($validated);
+
+        return redirect()->route('admin.videos.index')
+            ->with('success', 'Video created successfully!');
+    }
+
+    public function edit(Video $video)
+    {
+        $sensors = Sensor::where('is_active', true)->get();
+        return view('admin.videos.edit', compact('video', 'sensors'));
+    }
+
+    public function update(Request $request, Video $video)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'youtube_link' => 'required|url',
+            'category' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'sensor_id' => 'nullable|exists:sensors,id',
+        ]);
+
+        // Extract YouTube video ID
+        $youtubeId = $this->extractYouTubeId($validated['youtube_link']);
+        $validated['youtube_id'] = $youtubeId;
+        $validated['slug'] = Str::slug($validated['title']);
+        $validated['is_active'] = $request->has('is_active');
+
+        $video->update($validated);
+
+        return redirect()->route('admin.videos.index')
+            ->with('success', 'Video updated successfully!');
+    }
+
+    public function destroy(Video $video)
+    {
+        $video->delete();
+        return redirect()->route('admin.videos.index')
+            ->with('success', 'Video deleted successfully!');
+    }
+
+    private function extractYouTubeId($url)
+    {
+        preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\/?]+)/', $url, $matches);
+        return $matches[1] ?? null;
+    }
+}
