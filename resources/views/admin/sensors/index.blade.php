@@ -37,13 +37,13 @@
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach($sensors as $sensor)
+                    @php
+                        $imagePath = 'images/' . $sensor->name . '.jpeg';
+                        $resolvedImage = file_exists(public_path($imagePath)) ? asset($imagePath) : asset('images/no-image.svg');
+                    @endphp
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($sensor->image)
-                            <img src="{{ asset($sensor->image) }}" alt="{{ $sensor->name }}" class="h-20 w-20 object-cover rounded-lg shadow">
-                            @else
-                            <img src="{{ asset('images/no-image.svg') }}" alt="No Image" class="h-20 w-20 object-cover rounded-lg shadow opacity-50">
-                            @endif
+                            <img src="{{ $resolvedImage }}" alt="{{ $sensor->name }}" class="h-20 w-20 object-cover rounded-lg shadow">
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $sensor->name }}</div>

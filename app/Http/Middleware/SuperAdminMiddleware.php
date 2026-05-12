@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class SuperAdminMiddleware
 {
     /**
      * Handle an incoming request.
@@ -15,10 +15,10 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->canManageAdminArea()) {
-            abort(403, 'Unauthorized access.');
+        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+            abort(403, 'Super admin access only.');
         }
-        
+
         return $next($request);
     }
 }

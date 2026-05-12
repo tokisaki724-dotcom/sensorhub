@@ -6,8 +6,52 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">Admin Dashboard</h1>
-        <p class="text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening with your SensorHub platform.</p>
+        <div>
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">Admin Dashboard</h1>
+            <p class="text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening with your SensorHub platform.</p>
+        </div>
+    </div>
+
+    @if(auth()->user()->isSuperAdmin())
+    <div class="bg-gray-900 rounded-lg shadow p-6 mb-8 text-white">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <p class="text-sm text-blue-200 mb-1">Super Admin Controls</p>
+                <h2 class="text-2xl font-bold">Remove admin and user accounts</h2>
+                <p class="text-gray-300 mt-2">Open user management to remove admins or regular users and update account roles.</p>
+            </div>
+            <a href="{{ route('super-admin.users.index') }}" class="inline-flex items-center justify-center bg-primary text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition">
+                <i class="fas fa-users-cog mr-2"></i>Manage Accounts
+            </a>
+        </div>
+    </div>
+    @endif
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div class="flex items-center gap-4 min-w-0">
+                <div class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    @if(auth()->user()->profile_image && file_exists(public_path(auth()->user()->profile_image)))
+                        <img src="{{ asset(auth()->user()->profile_image) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                    @else
+                        <i class="fas fa-user-shield text-2xl text-gray-500 dark:text-gray-300"></i>
+                    @endif
+                </div>
+                <div class="min-w-0">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Admin Profile</p>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white truncate">{{ auth()->user()->name }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 truncate">{{ auth()->user()->email }}</p>
+                </div>
+            </div>
+            <div class="flex flex-col sm:items-end gap-3">
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-sm font-medium">
+                    <i class="fas fa-user-cog mr-2"></i>{{ auth()->user()->isSuperAdmin() ? 'Super Administrator' : 'Administrator' }}
+                </span>
+                <a href="{{ route('dashboard.profile') }}" class="inline-flex items-center justify-center bg-primary hover:bg-blue-700 text-white font-semibold px-5 py-3 rounded-lg transition">
+                    <i class="fas fa-user-edit mr-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Stats Grid -->
@@ -115,9 +159,18 @@
             <div class="space-y-3">
                 @foreach($recentUsers as $user)
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                    <div>
-                        <p class="font-medium text-gray-800 dark:text-white">{{ $user->name }}</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</p>
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            @if($user->profile_image && file_exists(public_path($user->profile_image)))
+                                <img src="{{ asset($user->profile_image) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                            @else
+                                <i class="fas fa-user text-gray-500"></i>
+                            @endif
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800 dark:text-white">{{ $user->name }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</p>
+                        </div>
                     </div>
                     <span class="text-xs text-gray-400">{{ $user->created_at->diffForHumans() }}</span>
                 </div>

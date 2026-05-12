@@ -19,6 +19,11 @@ use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\VideoController as AdminVideoController;
 use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
+use App\Http\Controllers\SuperAdmin\ProfileController as SuperAdminProfileController;
+use App\Http\Controllers\SuperAdmin\SuggestionController as SuperAdminSuggestionController;
+use App\Http\Controllers\SuperAdmin\ContentController as SuperAdminContentController;
 use App\Http\Controllers\EmailVerificationController;
 
 // Public Routes
@@ -36,6 +41,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/login/verify', [LoginController::class, 'verifyCode'])->name('login.verify');
     Route::post('/login/resend', [LoginController::class, 'resendCode'])->name('login.resend');
+    Route::get('/super-admin/login', [LoginController::class, 'showSuperAdminLoginForm'])->name('super-admin.login');
+    Route::post('/super-admin/login', [LoginController::class, 'superAdminLogin'])->name('super-admin.login.submit');
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 });
@@ -46,7 +53,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->midd
 Route::middleware(['auth.redirect'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::get('/suggestions', [SuggestionController::class, 'mySuggestions'])->name('suggestions');
     Route::get('/saved-projects', [ProjectController::class, 'saved'])->name('saved');
@@ -101,4 +108,27 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/suggestions', [AdminSuggestionController::class, 'index'])->name('suggestions.index');
     Route::get('/suggestions/{suggestion}', [AdminSuggestionController::class, 'show'])->name('suggestions.show');
     Route::put('/suggestions/{suggestion}/status', [AdminSuggestionController::class, 'updateStatus'])->name('suggestions.status');
+});
+
+// Super Admin Routes
+Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+    Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [SuperAdminProfileController::class, 'show'])->name('profile');
+    Route::put('/profile/update', [SuperAdminProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/password', [SuperAdminProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/users', [SuperAdminUserController::class, 'index'])->name('users.index');
+    Route::put('/users/{user}/role', [SuperAdminUserController::class, 'updateRole'])->name('users.role');
+    Route::delete('/users/{user}', [SuperAdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/suggestions', [SuperAdminSuggestionController::class, 'index'])->name('suggestions.index');
+    Route::get('/suggestions/{suggestion}', [SuperAdminSuggestionController::class, 'show'])->name('suggestions.show');
+    Route::put('/suggestions/{suggestion}/status', [SuperAdminSuggestionController::class, 'updateStatus'])->name('suggestions.status');
+    Route::get('/sensors', [SuperAdminContentController::class, 'sensors'])->name('sensors.index');
+    Route::get('/projects', [SuperAdminContentController::class, 'projects'])->name('projects.index');
+    Route::get('/products', [SuperAdminContentController::class, 'products'])->name('products.index');
+    Route::get('/videos', [SuperAdminContentController::class, 'videos'])->name('videos.index');
+    Route::get('/{type}/create', [SuperAdminContentController::class, 'create'])->whereIn('type', ['sensors', 'projects', 'products', 'videos'])->name('content.create');
+    Route::post('/{type}', [SuperAdminContentController::class, 'store'])->whereIn('type', ['sensors', 'projects', 'products', 'videos'])->name('content.store');
+    Route::get('/{type}/{id}/edit', [SuperAdminContentController::class, 'edit'])->whereIn('type', ['sensors', 'projects', 'products', 'videos'])->name('content.edit');
+    Route::put('/{type}/{id}', [SuperAdminContentController::class, 'update'])->whereIn('type', ['sensors', 'projects', 'products', 'videos'])->name('content.update');
+    Route::delete('/{type}/{id}', [SuperAdminContentController::class, 'destroy'])->whereIn('type', ['sensors', 'projects', 'products', 'videos'])->name('content.destroy');
 });

@@ -13,7 +13,12 @@ class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login');
+        return view('auth.login', ['loginMode' => 'default']);
+    }
+
+    public function showSuperAdminLoginForm()
+    {
+        return view('auth.login', ['loginMode' => 'super_admin']);
     }
 
     public function login(Request $request)
@@ -28,6 +33,11 @@ class LoginController extends Controller
 
         // Check if user exists and password is correct
         if ($user && Hash::check($credentials['password'], $user->password)) {
+            if ($user->isSuperAdmin()) {
+                return redirect()->route('super-admin.login')
+                    ->with('error', 'Please use the dedicated super admin login.');
+            }
+
             // Check if email is verified
             if (!$user->email_verified_at) {
                 // Generate and send verification code
@@ -41,20 +51,40 @@ class LoginController extends Controller
                 ]);
             }
             
-            // Email is verified, proceed with login
-            Auth::login($user, $request->filled('remember'));
-            $request->session()->regenerate();
-            
-            if ($user->isAdmin()) {
-                return redirect()->intended('/admin/dashboard');
-            }
-            
-            return redirect()->intended('/dashboard');
+            return $this->completeLogin($request, $user);
         }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
+    }
+
+    public function superAdminLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !$user->isSuperAdmin() || !Hash::check($credentials['password'], $user->password)) {
+            return back()->withErrors([
+                'email' => 'The provided super admin credentials do not match our records.',
+            ])->onlyInput('email');
+        }
+
+        if (!$user->email_verified_at) {
+            $code = $user->generateVerificationCode();
+            $user->notify(new VerifyEmailWithCode($code));
+
+            return redirect()->back()->with([
+                'require_verification' => true,
+                'user_email' => $user->email,
+            ]);
+        }
+
+        return $this->completeLogin($request, $user);
     }
 
     /**
@@ -78,15 +108,7 @@ class LoginController extends Controller
             // Clear the code and mark email as verified
             $user->clearVerificationCode();
             
-            // Login the user
-            Auth::login($user);
-            $request->session()->regenerate();
-            
-            if ($user->isAdmin()) {
-                return redirect()->intended('/admin/dashboard');
-            }
-            
-            return redirect()->intended('/dashboard');
+            return $this->completeLogin($request, $user);
         }
 
         return back()->withErrors([
@@ -120,10 +142,28 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        $redirectRoute = Auth::user()?->isSuperAdmin() ? 'super-admin.login' : 'login';
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/');
+        return redirect()->route($redirectRoute);
+    }
+
+    private function completeLogin(Request $request, User $user)
+    {
+        Auth::login($user, $request->filled('remember'));
+        $request->session()->regenerate();
+
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('super-admin.dashboard');
+        }
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('dashboard.index');
     }
 }

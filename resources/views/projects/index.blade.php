@@ -38,8 +38,8 @@
     <!-- Projects Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         @foreach($projects as $project)
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1">
-            <div class="p-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 h-full">
+            <div class="p-8 h-full flex flex-col">
                 <!-- Header with badges -->
                 <div class="flex items-center justify-between mb-4">
                     <span class="px-3 py-1 rounded-full text-sm font-semibold
@@ -77,7 +77,7 @@
                 @endif
 
                 <!-- Action Buttons -->
-                <div class="flex gap-3">
+                <div class="flex gap-3 mt-auto pt-2">
                     <a href="{{ route('projects.show', $project->slug) }}" class="flex-1 text-center bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
                         View Project <i class="fas fa-arrow-right ml-2"></i>
                     </a>

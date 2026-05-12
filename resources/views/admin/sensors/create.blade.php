@@ -13,7 +13,7 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <form method="POST" action="{{ route('admin.sensors.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('admin.sensors.store') }}">
             @csrf
 
             <div class="space-y-6">
@@ -26,22 +26,6 @@
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white @error('name') border-red-500 @enderror"
                         value="{{ old('name') }}">
                     @error('name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Image -->
-                <div>
-                    <label for="image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Sensor Image
-                    </label>
-                    <div id="image-preview-container" class="mb-4 hidden">
-                        <img id="image-preview" class="h-48 w-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-600">
-                    </div>
-                    <input type="file" name="image" id="image" accept="image/*" onchange="previewImage(event)"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white @error('image') border-red-500 @enderror">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Supported formats: JPEG, PNG, JPG, GIF (Max: 2MB)</p>
-                    @error('image')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -119,20 +103,4 @@
         </form>
     </div>
 </div>
-
-@push('scripts')
-<script>
-function previewImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('image-preview').src = e.target.result;
-            document.getElementById('image-preview-container').classList.remove('hidden');
-        }
-        reader.readAsDataURL(file);
-    }
-}
-</script>
-@endpush
 @endsection

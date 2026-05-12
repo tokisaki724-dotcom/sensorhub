@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -13,13 +13,14 @@ class ProfileController extends Controller
     public function show()
     {
         $user = Auth::user();
-        return view('user.profile', compact('user'));
+
+        return view('super-admin.profile', compact('user'));
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
@@ -47,7 +48,7 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'Profile updated successfully!');
+        return back()->with('success', 'Super admin profile updated successfully.');
     }
 
     public function updatePassword(Request $request)
@@ -61,7 +62,6 @@ class ProfileController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Password updated successfully!');
+        return back()->with('success', 'Password updated successfully.');
     }
 }
-
